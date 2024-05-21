@@ -1,0 +1,44 @@
+@import 'assets/sass/custom/_variables.scss';
+
+.container-scroll {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 1.5rem;
+}
+
+.container-scroll > .row {
+  overflow-x: auto;
+  white-space: nowrap;
+  display: block;
+}
+
+.container-scroll > .row > .col-md-6 {
+  display: inline-block;
+  float: none;
+  vertical-align: top;
+}
+
+.order-section h3 {
+  padding-bottom: 1rem;
+}
+
+.order-section .fields-block {
+  padding: 0.7rem;
+  margin-bottom: 1rem;
+}
+
+.order-section:nth-child(odd) .fields-block {
+  background-color: #add8e673;
+}
+
+.order-section:nth-child(even) .fields-block {
+  background-color: #dee2e661;
+}
+
+.purchase-field input {
+  max-width: 15%;
+}
+
+.parking-unavailable {
+  color: $red;
+}

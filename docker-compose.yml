@@ -1,0 +1,131 @@
+version: '3'
+services:
+  nginx_app:
+    build: .docker/nginx
+    container_name: app_nginx
+    ports:
+      - 80:80
+    depends_on:
+        - php_auth_api
+        - php_users_api
+        - php_messaging_api
+        - php_storage_api
+    volumes:
+      - ./api:/home/wwwroot/app
+      - .docker/nginx/config:/etc/nginx
+    networks:
+      - app_net
+
+  nodejs_front:
+    build:
+      context: .docker/nodejs
+    container_name: app_front_nodejs
+    user: "${UID}:${GID}"
+    volumes:
+      - ./front:/app
+    ports:
+     - 9091:3000
+    environment:
+      HOST: '0.0.0.0'
+      NODE_ENV: ${NODE_ENV:-production}
+    networks:
+      - app_net
+
+  postgres:
+    container_name: app_db_postgres
+    image: postgres:14
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: /data/postgres
+    user: "${UID}:${GID}"
+    volumes:
+      - .docker/postgres/db:/data/postgres
+      - .docker/postgres/bckps:/data/bckps
+    ports:
+      - "5432:5432"
+    networks:
+      - app_net
+
+  pgadmin:
+    container_name: app_pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    volumes:
+      - .docker/pgadmin:/root/.pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - app_net
+
+  php_auth_api:
+    build:
+      context: .docker/php/auth_api
+    container_name: app_auth_api_php
+    user: "${UID}:${GID}"
+    volumes:
+      - ./api/auth_api:/home/wwwroot/app/auth_api
+      - ./api/common:/home/wwwroot/app/auth_api/common
+    depends_on:
+      - postgres
+    environment:
+      APP_ENV: ${API_ENV}
+    networks:
+      - app_net
+
+  php_users_api:
+    build: .docker/php/users_api
+    container_name: app_users_api_php
+    user: "${UID}:${GID}"
+    volumes:
+      - ./api/users_api:/home/wwwroot/app/users_api
+      - ./api/common:/home/wwwroot/app/users_api/common
+    depends_on:
+      - postgres
+    environment:
+      APP_ENV: ${API_ENV}
+    networks:
+      - app_net
+
+  php_messaging_api:
+    build: .docker/php/messaging_api
+    container_name: app_messaging_api_php
+    user: "${UID}:${GID}"
+    volumes:
+      - ./api/messaging_api:/home/wwwroot/app/messaging_api
+      - ./api/common:/home/wwwroot/app/messaging_api/common
+    depends_on:
+      - postgres
+    environment:
+      APP_ENV: ${API_ENV}
+    networks:
+      - app_net
+
+  php_storage_api:
+    build: .docker/php/storage_api
+    container_name: app_storage_api_php
+    user: "${UID}:${GID}"
+    volumes:
+      - ./api/storage_api:/home/wwwroot/app/storage_api
+      - .docker/storage/files:/home/wwwroot/airport/storage_api/public/files
+      - ./api/common:/home/wwwroot/app/storage_api/common
+    depends_on:
+      - postgres
+    environment:
+      APP_ENV: ${API_ENV}
+    networks:
+      - app_net
+
+  mailer:
+    image: schickling/mailcatcher
+    ports:
+      - "1025:25"
+      - "1080:1080"
+    networks:
+      - app_net
+
+networks:
+  app_net:
+    driver: bridge

@@ -1,0 +1,21 @@
+.pagination {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+
+div.el-table tbody td {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+  button {
+    box-shadow: none;
+
+    &.action-warning {
+      color: $warning;
+    }
+  }
+}
+
+td.actions-column .cell .btn {
+  padding: 0 0.3rem;
+  display: inline-block;
+}
